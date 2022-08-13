@@ -2,7 +2,7 @@
  * @Author: tigoo 512045192@qq.com
  * @Date: 2022-08-13 10:47:58
  * @LastEditors: tigoo 512045192@qq.com
- * @LastEditTime: 2022-08-13 14:04:43
+ * @LastEditTime: 2022-08-13 17:14:06
  * @FilePath: /some-server/src/modules/auth/auth.service.ts
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -13,11 +13,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../user/entities/user.entity';
 import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
+    private jwtService: JwtService,
   ) {}
   async regist(registAuthDto: RegistAuthDto) {
     const testExistUser = await this.userRepository.findOne({
@@ -53,6 +55,8 @@ export class AuthService {
     if (!pwdCorret) {
       throw new BadRequestException('用户密码错误');
     }
-    return foundUser;
+    // 返回jwt Token
+    const token = this.jwtService.sign({ id: foundUser.id });
+    return { ...foundUser, token };
   }
 }
