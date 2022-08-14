@@ -2,7 +2,7 @@
  * @Author: tigoo 512045192@qq.com
  * @Date: 2022-08-13 10:47:58
  * @LastEditors: tigoo 512045192@qq.com
- * @LastEditTime: 2022-08-13 22:42:29
+ * @LastEditTime: 2022-08-14 23:10:25
  * @FilePath: /some-server/src/modules/auth/auth.controller.ts
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -21,8 +21,10 @@ import { AuthService } from './auth.service';
 import { RegistAuthDto } from './dto/regist-auth.dto';
 import { LoginAuthDto } from './dto/login-auth.dto';
 import { Public } from 'src/wigets/decoretors/isPublic';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('auth')
+@ApiTags('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
   @Public()
