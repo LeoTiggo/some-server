@@ -17,6 +17,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './modules/auth/jwt.auth.guard';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { configSchemaValidator } from './utils/validators/config.schema';
+import { FileUploadModule } from './modules/file-upload/file-upload.module';
 console.log('process.env.STAGE', process.env.STAGE);
 
 @Module({
@@ -56,6 +57,7 @@ console.log('process.env.STAGE', process.env.STAGE);
     // }),
     UserModule,
     AuthModule,
+    FileUploadModule,
   ],
   controllers: [AppController],
   providers: [
