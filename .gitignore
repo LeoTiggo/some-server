@@ -104,3 +104,6 @@ dist
 .tern-port
 # nest cache local files
 fileDest/
+
+dist/
+bigUpload/
