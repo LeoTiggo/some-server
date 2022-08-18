@@ -3,7 +3,7 @@ import { BadRequestException } from '@nestjs/common';
  * @Author: tigoo 512045192@qq.com
  * @Date: 2022-08-15 11:23:30
  * @LastEditors: tigoo 512045192@qq.com
- * @LastEditTime: 2022-08-17 16:16:43
+ * @LastEditTime: 2022-08-18 09:33:42
  * @FilePath: /some-server/src/modules/file-upload/file-upload.service.ts
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -16,6 +16,8 @@ const path = require('path');
 const BIGFILEDIRS = path.join(process.cwd(), 'bigUpload');
 @Injectable()
 export class FileUploadService {
+  extractExt = (filename) =>
+    filename.slice(filename.lastIndexOf('.'), filename.length);
   uploadFile(reqBody, file) {
     console.log(reqBody, file);
 
@@ -52,11 +54,12 @@ export class FileUploadService {
       return 'wirte chunk failed';
     }
   }
+
   async bigFilesMerge(mergeParams) {
-    const { filename, size } = mergeParams;
+    const { filename, size, fileHash } = mergeParams;
     if (!filename || !size) throw new BadRequestException('合并文件参数缺失');
     // 根据客户端的请求合并文件名进行路径拼接
-    const chunksDir = path.resolve(BIGFILEDIRS, 'chunkDir', filename); //最终合并文件的路径
+    const chunksDir = path.resolve(BIGFILEDIRS, 'chunkDir', fileHash); //最终合并文件的路径
     // 获取所有切片的路径
     try {
       const chunksPaths: string[] = await readdir(chunksDir);
@@ -67,7 +70,10 @@ export class FileUploadService {
       //   return achunkIdx - bchunkIdx;
       // });
       // 通过流的形式写入合并文件
-      const resFile = path.resolve(BIGFILEDIRS, filename);
+      const resFile = path.resolve(
+        BIGFILEDIRS,
+        `${fileHash}.${this.extractExt(filename)}`,
+      );
       await Promise.all(
         chunksPaths.map((chunkpath, idx) => {
           return new Promise((resolve, reject) => {
@@ -101,5 +107,38 @@ export class FileUploadService {
     const SIG = '-';
     const nameArr = chunkname.split(SIG);
     return +nameArr[nameArr.length - 1];
+  }
+  async checkFileExist(checkParams) {
+    const { filename, fileHash } = checkParams;
+    let shoudUpload: boolean;
+    let uploadedFile: any[] = [];
+    console.log('checkExist', filename, fileHash);
+
+    if (!filename || !fileHash)
+      throw new BadRequestException('文件参数校验不完整');
+    //  检查合并文件
+    const mergeFile = path.resolve(
+      BIGFILEDIRS,
+      `${fileHash}.${this.extractExt(filename)}`,
+    );
+    try {
+      await access(mergeFile, constants.W_OK | constants.R_OK);
+      console.log('shouldUpload', false);
+
+      shoudUpload = false;
+    } catch (error) {
+      console.log('not shouldUpload', error);
+      shoudUpload = true;
+    }
+    // 获取已上传分片
+    if (shoudUpload) {
+      const uploadedChunkDir = path.resolve(BIGFILEDIRS, 'chunkDir', fileHash);
+      try {
+        uploadedFile = await readdir(uploadedChunkDir);
+      } catch (error) {
+        uploadedFile = [];
+      }
+    }
+    return { shoudUpload, uploadedFile };
   }
 }
