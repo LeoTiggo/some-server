@@ -19,6 +19,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { configSchemaValidator } from './utils/validators/config.schema';
 import { FileUploadModule } from './modules/file-upload/file-upload.module';
 import { FileDownloadModule } from './modules/file-download/file-download.module';
+import { InfoModule } from './modules/info/info.module';
 console.log('process.env.STAGE', process.env.STAGE);
 
 @Module({
@@ -60,6 +61,7 @@ console.log('process.env.STAGE', process.env.STAGE);
     AuthModule,
     FileUploadModule,
     FileDownloadModule,
+    InfoModule,
   ],
   controllers: [AppController],
   providers: [
